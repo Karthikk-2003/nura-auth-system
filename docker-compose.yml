@@ -1,0 +1,81 @@
+version: '3.8'
+
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: auth_web
+    ports:
+      - "8080:80"
+    environment:
+      MYSQL_HOST: db
+      MYSQL_DB: auth_db
+      MYSQL_USER: auth_user
+      MYSQL_PASSWORD: auth_password
+      MONGO_HOST: mongo
+      MONGO_PORT: 27017
+      MONGO_DB: auth_profile_db
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+    depends_on:
+      db:
+        condition: service_healthy
+      mongo:
+        condition: service_started
+      redis:
+        condition: service_started
+    volumes:
+      - .:/var/www/html
+    networks:
+      - auth_net
+
+  db:
+    image: mysql:8.0
+    container_name: auth_mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root_password
+      MYSQL_DATABASE: auth_db
+      MYSQL_USER: auth_user
+      MYSQL_PASSWORD: auth_password
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./schema.sql:/docker-entrypoint-initdb.d/schema.sql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "auth_user", "-pauth_password"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - auth_net
+
+  mongo:
+    image: mongo:6.0
+    container_name: auth_mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - auth_net
+
+  redis:
+    image: redis:7.0-alpine
+    container_name: auth_redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - auth_net
+
+networks:
+  auth_net:
+    driver: bridge
+
+volumes:
+  mysql_data:
+  mongo_data:
+  redis_data:

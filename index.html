@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Secure Polyglot Authentication System with PHP REST APIs, MySQL, MongoDB, and Redis.">
+  <title>PolyAuth - Secure Polyglot Authentication System</title>
+  
+  <!-- Bootstrap 5 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Bootstrap Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+
+  <!-- Navigation Bar -->
+  <nav class="navbar navbar-expand-lg navbar-dark navbar-custom sticky-top py-3">
+    <div class="container">
+      <a class="navbar-brand d-flex align-items-center gap-2" href="index.html">
+        <i class="bi bi-shield-lock-fill text-primary"></i>
+        <span>PolyAuth Stack</span>
+      </a>
+      <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navMenu">
+        <ul class="navbar-nav ms-auto align-items-lg-center gap-2 mt-3 mt-lg-0">
+          <li class="nav-item">
+            <a class="btn btn-outline-glass px-4 w-100" href="login.html">
+              <i class="bi bi-box-arrow-in-right me-1"></i> Log In
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="btn btn-gradient-primary px-4 w-100" href="register.html">
+              <i class="bi bi-person-plus-fill me-1"></i> Register Account
+            </a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Content Hero Section -->
+  <main class="container my-auto py-5">
+    <div class="row align-items-center g-5">
+      <div class="col-lg-7">
+        <div class="mb-3 d-flex flex-wrap gap-2">
+          <span class="badge-tech badge-php"><i class="bi bi-code-slash"></i> PHP REST API</span>
+          <span class="badge-tech badge-mysql"><i class="bi bi-database"></i> MySQL Credentials</span>
+          <span class="badge-tech badge-mongo"><i class="bi bi-file-earmark-code"></i> MongoDB Profiles</span>
+          <span class="badge-tech badge-redis"><i class="bi bi-lightning-charge"></i> Redis Session Cache</span>
+        </div>
+        <h1 class="display-4 fw-bold hero-glow mb-4">Enterprise Polyglot Authentication Architecture</h1>
+        <p class="lead text-secondary mb-4" style="line-height: 1.8;">
+          Experience state-of-the-art authentication designed with high-performance polyglot persistence. Credentials stored securely in <strong>MySQL</strong> with BCRYPT hashing, flexible profiles saved in <strong>MongoDB</strong>, and active 24-hour sessions managed in <strong>Redis</strong>.
+        </p>
+        
+        <div class="d-flex flex-wrap gap-3 mb-4">
+          <a href="register.html" class="btn btn-gradient-primary btn-lg px-4 py-3">
+            <i class="bi bi-rocket-takeoff-fill me-2"></i> Get Started Now
+          </a>
+          <a href="login.html" class="btn btn-outline-glass btn-lg px-4 py-3">
+            <i class="bi bi-shield-check me-2"></i> Sign In to Dashboard
+          </a>
+        </div>
+      </div>
+
+      <div class="col-lg-5">
+        <div class="glass-card p-4 p-md-5">
+          <h3 class="fw-bold mb-4 text-white d-flex align-items-center gap-2">
+            <i class="bi bi-layers-half text-indigo"></i> Stack Overview
+          </h3>
+          
+          <div class="d-flex align-items-start gap-3 mb-4">
+            <div class="p-3 rounded-3 bg-primary bg-opacity-20 text-primary border border-primary border-opacity-25">
+              <i class="bi bi-key-fill fs-4"></i>
+            </div>
+            <div>
+              <h5 class="fw-bold mb-1 text-white">MySQL Credential Vault</h5>
+              <p class="small text-muted mb-0">Strict schema mapping for `users` with BCRYPT password hashing and prepared query execution.</p>
+            </div>
+          </div>
+
+          <div class="d-flex align-items-start gap-3 mb-4">
+            <div class="p-3 rounded-3 bg-success bg-opacity-20 text-success border border-success border-opacity-25">
+              <i class="bi bi-person-vcard-fill fs-4"></i>
+            </div>
+            <div>
+              <h5 class="fw-bold mb-1 text-white">MongoDB Extended Profiles</h5>
+              <p class="small text-muted mb-0">NoSQL document store for user profile data (bio, age, hobbies, interests, and metadata).</p>
+            </div>
+          </div>
+
+          <div class="d-flex align-items-start gap-3">
+            <div class="p-3 rounded-3 bg-danger bg-opacity-20 text-danger border border-danger border-opacity-25">
+              <i class="bi bi-lightning-fill fs-4"></i>
+            </div>
+            <div>
+              <h5 class="fw-bold mb-1 text-white">Redis Session State</h5>
+              <p class="small text-muted mb-0">In-memory key-value cache (`session:<token>`) with automatic 24-hour TTL expiration.</p>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="py-4 text-center text-muted fs-7">
+    <div class="container">
+      <p class="mb-0">&copy; 2026 PolyAuth System. Enterprise Grade Polyglot Architecture.</p>
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
