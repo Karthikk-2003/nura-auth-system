@@ -27,16 +27,19 @@ function getMySQLConnection() {
     }
 
     $host = getenv('MYSQL_HOST') ?: 'localhost';
+    $port = getenv('MYSQL_PORT') ?: '3306';
     $db   = getenv('MYSQL_DB') ?: 'auth_db';
     $user = getenv('MYSQL_USER') ?: 'auth_user';
     $pass = getenv('MYSQL_PASSWORD') ?: 'auth_password';
     $charset = 'utf8mb4';
 
-    $dsn = "mysql:host={$host};dbname={$db};charset={$charset}";
+    $dsn = "mysql:host={$host};port={$port};dbname={$db};charset={$charset}";
     $options = [
-        PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
-        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-        PDO::ATTR_EMULATE_PREPARES   => false,
+        PDO::MYSQL_ATTR_SSL_CA                  => true,
+        PDO::MYSQL_ATTR_SSL_VERIFY_SERVER_CERT => false,
+        PDO::ATTR_ERRMODE                       => PDO::ERRMODE_EXCEPTION,
+        PDO::ATTR_DEFAULT_FETCH_MODE            => PDO::FETCH_ASSOC,
+        PDO::ATTR_EMULATE_PREPARES              => false,
     ];
 
     try {
