@@ -145,21 +145,41 @@ function getMongoProfile($userId) {
 }
 
 /**
- * Get Redis Connection
+ * Get Redis Connection (supports TLS for Upstash and authentication)
  */
 function getRedisConnection() {
-    static $redis = null;
-    if ($redis !== null) {
-        return $redis;
+    static $client = null;
+    if ($client !== null) {
+        return $client;
     }
 
-    $host = getenv('REDIS_HOST') ?: 'localhost';
-    $port = (int)(getenv('REDIS_PORT') ?: 6379);
+    $host     = getenv('REDIS_HOST') ?: '127.0.0.1';
+    $port     = (int)(getenv('REDIS_PORT') ?: 6379);
+    $password = getenv('REDIS_PASSWORD') ?: null;
+
+    // Ensure scheme is tls for Upstash remote endpoints
+    $scheme = (strpos($host, 'upstash.io') !== false) ? 'tls' : 'tcp';
 
     try {
-        $redis = new Redis();
-        $redis->connect($host, $port);
-        return $redis;
+        if (class_exists('Predis\Client')) {
+            $client = new Predis\Client([
+                'scheme'   => $scheme,
+                'host'     => $host,
+                'port'     => $port,
+                'password' => $password,
+                'ssl'      => ['verify_peer' => false]
+            ]);
+            return $client;
+        } else {
+            $redis = new Redis();
+            $connectHost = ($scheme === 'tls' && strpos($host, 'tls://') !== 0) ? 'tls://' . $host : $host;
+            $redis->connect($connectHost, $port);
+            if (!empty($password)) {
+                $redis->auth($password);
+            }
+            $client = $redis;
+            return $client;
+        }
     } catch (\Exception $e) {
         jsonResponse(false, 'Redis Connection Error: ' . $e->getMessage(), 500);
         exit;
