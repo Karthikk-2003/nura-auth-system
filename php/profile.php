@@ -31,8 +31,20 @@ if ($method === 'GET') {
             jsonResponse(false, 'User account not found.', 404);
         }
 
-        // Query extended profile details from MongoDB
+        // Query extended profile details from MongoDB using user_id
         $mongoProfile = getMongoProfile($userId);
+
+        // Safely extract all MongoDB profile fields with fallbacks
+        $profileName       = $mongoProfile['name']       ?? ($mongoProfile['full_name'] ?? '');
+        $profileAge        = (int)($mongoProfile['age']  ?? 0);
+        $profileBio        = $mongoProfile['bio']        ?? '';
+        $profileInterests  = $mongoProfile['interests']  ?? [];
+        $profileUpdatedAt  = $mongoProfile['updated_at'] ?? null;
+
+        // Normalize interests to a plain array of strings
+        if (!is_array($profileInterests)) {
+            $profileInterests = [];
+        }
 
         jsonResponse(true, [
             'user' => [
@@ -42,11 +54,11 @@ if ($method === 'GET') {
                 'created_at' => $mysqlUser['created_at']
             ],
             'profile' => [
-                'name'       => $mongoProfile['name'] ?? '',
-                'age'        => (int)($mongoProfile['age'] ?? 0),
-                'bio'        => $mongoProfile['bio'] ?? '',
-                'interests'  => $mongoProfile['interests'] ?? [],
-                'updated_at' => $mongoProfile['updated_at'] ?? null
+                'name'       => $profileName,
+                'age'        => $profileAge,
+                'bio'        => $profileBio,
+                'interests'  => array_values(array_filter($profileInterests)),
+                'updated_at' => $profileUpdatedAt
             ]
         ], 200);
 
@@ -69,6 +81,15 @@ if ($method === 'GET') {
     $bio       = trim($input['bio'] ?? '');
     $interests = $input['interests'] ?? [];
     $username  = trim($input['username'] ?? '');
+
+    // Normalize interests input (supports comma-separated string or array)
+    if (is_string($interests)) {
+        $interests = array_values(array_filter(array_map('trim', explode(',', $interests))));
+    } elseif (is_array($interests)) {
+        $interests = array_values(array_filter(array_map('trim', $interests)));
+    } else {
+        $interests = [];
+    }
 
     $errors = [];
 
@@ -107,19 +128,27 @@ if ($method === 'GET') {
             saveSession($sessionToken, $session, 86400);
         }
 
-        // Update MongoDB profile document
+        // Upsert extended profile document into MongoDB
         $profileUpdated = saveMongoProfile($userId, [
             'name'      => $name,
-            'age'       => $age,
+            'age'       => (int)$age,
             'bio'       => $bio,
             'interests' => $interests
         ]);
 
         if (!$profileUpdated) {
-            jsonResponse(false, 'Failed to update profile details in database.', 500);
+            jsonResponse(false, 'Failed to update profile details in MongoDB.', 500);
         }
 
-        jsonResponse(true, 'Profile updated successfully!', 200);
+        jsonResponse(true, [
+            'message' => 'Profile updated successfully!',
+            'profile' => [
+                'name'      => $name,
+                'age'       => (int)$age,
+                'bio'       => $bio,
+                'interests' => $interests
+            ]
+        ], 200);
 
     } catch (\PDOException $e) {
         error_log('Profile UPDATE MySQL Exception: ' . $e->getMessage());

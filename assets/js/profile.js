@@ -5,14 +5,14 @@
 
 $(document).ready(function () {
 
-  const $loadingOverlay = $('#loadingOverlay');
+  const $loadingOverlay   = $('#loadingOverlay');
   const $profileContainer = $('#profileContainer');
-  const $alertContainer = $('#alertContainer');
-  const $editForm = $('#editProfileForm');
-  const $btnSaveProfile = $('#btnSaveProfile');
-  const $btnSaveText = $('#btnSaveText');
-  const $btnSaveSpinner = $('#btnSaveSpinner');
-  const $btnLogout = $('#btnLogout');
+  const $alertContainer   = $('#alertContainer');
+  const $editForm         = $('#editProfileForm');
+  const $btnSaveProfile   = $('#btnSaveProfile');
+  const $btnSaveText      = $('#btnSaveText');
+  const $btnSaveSpinner   = $('#btnSaveSpinner');
+  const $btnLogout        = $('#btnLogout');
 
   // Retrieve token from localStorage
   const sessionToken = localStorage.getItem('session_token');
@@ -34,7 +34,7 @@ $(document).ready(function () {
   function showAlert(message, type = 'danger') {
     const icon = type === 'success' ? 'bi-check-circle-fill' : 'bi-exclamation-triangle-fill';
     const alertHtml = `
-      <div class="custom-alert custom-alert-${type} fade show mb-4" role="alert">
+      <div class="custom-alert custom-alert-${type} fade show" role="alert">
         <i class="bi ${icon} fs-5"></i>
         <div>${message}</div>
       </div>
@@ -67,6 +67,7 @@ $(document).ready(function () {
 
   /**
    * Load Profile Data via jQuery AJAX GET
+   * Fetches both MySQL user data and MongoDB extended profile fields
    */
   function loadProfile() {
     $.ajax({
@@ -88,10 +89,12 @@ $(document).ready(function () {
           handleUnauthorized();
         } else {
           $loadingOverlay.html(`
-            <div class="text-danger">
+            <div class="text-danger text-center">
               <i class="bi bi-exclamation-triangle-fill fs-1"></i>
               <p class="mt-3 fw-bold">Failed to load profile data.</p>
-              <button class="btn btn-outline-glass btn-sm" onclick="location.reload()">Retry</button>
+              <button class="btn btn-outline-glass btn-sm" onclick="location.reload()">
+                <i class="bi bi-arrow-clockwise me-1"></i> Retry
+              </button>
             </div>
           `);
         }
@@ -100,39 +103,46 @@ $(document).ready(function () {
   }
 
   /**
-   * Populate UI with MySQL user and MongoDB profile data
+   * Populate UI with MySQL user and MongoDB extended profile data.
+   * Fills both the left-hand Profile Card display and the Edit Profile form inputs.
    */
   function renderProfile(user, profile) {
-    // Top banner
-    $('#dispName').text(profile.name || user.username);
+    // Resolve display name: prefer MongoDB name field, fall back to username
+    const displayName = (profile.name && profile.name.trim()) ? profile.name : user.username;
+
+    // ── Top banner ──────────────────────────────
+    $('#dispName').text(displayName);
     $('#dispUsernameBadge').text('@' + user.username);
     $('#dispEmail').text(user.email);
     $('#dispUserId').text(user.id);
 
-    // Left display card
-    $('#dispFullName').text(profile.name || 'Not specified');
-    $('#dispAge').text(profile.age ? profile.age + ' years old' : 'Not specified');
-    $('#dispBio').text(profile.bio || 'No bio provided yet.');
+    // ── Left display card (Profile Card) ────────
+    $('#dispFullName').text(profile.name && profile.name.trim() ? profile.name : 'Not specified');
+    $('#dispAge').text(profile.age && profile.age > 0 ? profile.age + ' years old' : 'Not specified');
+    $('#dispBio').text(profile.bio && profile.bio.trim() ? profile.bio : 'No bio provided yet.');
     $('#dispCreatedAt').text(user.created_at || 'N/A');
     $('#dispUpdatedAt').text(profile.updated_at || 'N/A');
 
-    // Render interest tags
+    // ── Interest tag pills ───────────────────────
     const $interestsContainer = $('#dispInterestsContainer').empty();
-    if (profile.interests && profile.interests.length > 0) {
-      profile.interests.forEach(function (interest) {
-        $interestsContainer.append(`<span class="interest-tag"><i class="bi bi-tag-fill me-1"></i>${escapeHtml(interest)}</span>`);
+    const interests = Array.isArray(profile.interests) ? profile.interests.filter(Boolean) : [];
+    if (interests.length > 0) {
+      interests.forEach(function (interest) {
+        $interestsContainer.append(
+          `<span class="interest-tag"><i class="bi bi-tag-fill me-1"></i>${escapeHtml(interest)}</span>`
+        );
       });
     } else {
-      $interestsContainer.html('<span class="text-muted fs-7">No interests added yet.</span>');
+      $interestsContainer.html('<span class="text-muted small">No interests added yet.</span>');
     }
 
-    // Right edit form
-    $('#editUsername').val(user.username);
-    $('#editEmail').val(user.email);
+    // ── Right Edit Profile form inputs ───────────
+    $('#editUsername').val(user.username || '');
+    $('#editEmail').val(user.email || '');
     $('#editName').val(profile.name || '');
-    $('#editAge').val(profile.age || '');
+    $('#editAge').val(profile.age > 0 ? profile.age : '');
     $('#editBio').val(profile.bio || '');
-    $('#editInterests').val(profile.interests ? profile.interests.join(', ') : '');
+    $('#editInterests').val(interests.length > 0 ? interests.join(', ') : '');
   }
 
   /**
@@ -152,17 +162,19 @@ $(document).ready(function () {
 
   /**
    * Submit Profile Edits via jQuery AJAX POST
+   * Sends all MongoDB profile fields; server performs upsert
    */
   $editForm.on('submit', function (e) {
     e.preventDefault();
     hideAlert();
 
-    const username = $('#editUsername').val().trim();
-    const name = $('#editName').val().trim();
-    const age = $('#editAge').val().trim();
-    const bio = $('#editBio').val().trim();
+    const username     = $('#editUsername').val().trim();
+    const name         = $('#editName').val().trim();
+    const age          = $('#editAge').val().trim();
+    const bio          = $('#editBio').val().trim();
     const rawInterests = $('#editInterests').val().trim();
 
+    // Client-side validation
     if (!name) {
       showAlert('Full Name cannot be empty.');
       return;
@@ -178,13 +190,16 @@ $(document).ready(function () {
       return;
     }
 
-    const interests = rawInterests ? rawInterests.split(',').map(item => item.trim()).filter(Boolean) : [];
+    // Convert comma-separated interests string to clean array
+    const interests = rawInterests
+      ? rawInterests.split(',').map(item => item.trim()).filter(Boolean)
+      : [];
 
     const payload = {
-      username: username,
-      name: name,
-      age: parseInt(age, 10),
-      bio: bio,
+      username:  username,
+      name:      name,
+      age:       parseInt(age, 10),
+      bio:       bio,
       interests: interests
     };
 
@@ -201,7 +216,13 @@ $(document).ready(function () {
         setSaveLoading(false);
         if (response.success) {
           showAlert(response.message || 'Profile updated successfully!', 'success');
-          loadProfile(); // Refresh UI
+          // If server echoes back updated profile, re-render immediately; else reload
+          if (response.profile) {
+            // Fetch fresh user row to keep MySQL fields current
+            loadProfile();
+          } else {
+            loadProfile();
+          }
         } else {
           showAlert(response.message || 'Failed to update profile.');
         }
@@ -220,6 +241,7 @@ $(document).ready(function () {
 
   /**
    * Handle Logout Click via jQuery AJAX
+   * Deletes Redis session then redirects to login
    */
   $btnLogout.on('click', function (e) {
     e.preventDefault();
@@ -236,7 +258,7 @@ $(document).ready(function () {
     });
   });
 
-  // Initial Load Trigger
+  // ── Initial page load: fetch profile ──────────
   loadProfile();
 
 });
