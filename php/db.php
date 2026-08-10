@@ -52,7 +52,7 @@ function getMySQLConnection() {
 }
 
 /**
- * Get MongoDB Driver Manager Connection
+ * Get MongoDB Connection Manager (Supports Atlas SRV format and Auth)
  */
 function getMongoDBManager() {
     static $manager = null;
@@ -60,11 +60,25 @@ function getMongoDBManager() {
         return $manager;
     }
 
-    $host = getenv('MONGO_HOST') ?: 'localhost';
-    $port = getenv('MONGO_PORT') ?: '27017';
+    $host = getenv('MONGO_HOST') ?: '127.0.0.1';
+    $user = getenv('MONGO_USER') ?: '';
+    $pass = getenv('MONGO_PASSWORD') ?: '';
+    $db   = getenv('MONGO_DB') ?: 'auth_profile_db';
+
+    // Format Atlas SRV connection string when using cloud hosts (*.mongodb.net)
+    if (strpos($host, 'mongodb.net') !== false) {
+        $auth = (!empty($user) && !empty($pass)) ? rawurlencode($user) . ':' . rawurlencode($pass) . '@' : '';
+        $cleanHost = preg_replace('/^https?:\/\//', '', $host);
+        $cleanHost = explode('/', $cleanHost)[0]; // Extract pure domain
+        $uri = "mongodb+srv://{$auth}{$cleanHost}/{$db}?retryWrites=true&w=majority";
+    } else {
+        $port = getenv('MONGO_PORT') ?: '27017';
+        $auth = (!empty($user) && !empty($pass)) ? rawurlencode($user) . ':' . rawurlencode($pass) . '@' : '';
+        $uri  = "mongodb://{$auth}{$host}:{$port}/{$db}";
+    }
 
     try {
-        $manager = new MongoDB\Driver\Manager("mongodb://{$host}:{$port}");
+        $manager = new MongoDB\Driver\Manager($uri);
         return $manager;
     } catch (\Exception $e) {
         jsonResponse(false, 'MongoDB Connection Error: ' . $e->getMessage(), 500);
