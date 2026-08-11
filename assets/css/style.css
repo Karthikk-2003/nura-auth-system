@@ -3,28 +3,28 @@
 
 :root {
   /* Light theme palette */
-  --bg-base:          #f1f5f9;
-  --card-bg:          #ffffff;
-  --card-border:      #e2e8f0;
-  --primary-accent:   #6366f1;
+  --bg-base: #f1f5f9;
+  --card-bg: #ffffff;
+  --card-border: #e2e8f0;
+  --primary-accent: #6366f1;
   --primary-gradient: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
   --secondary-accent: #0891b2;
-  --success-color:    #059669;
-  --warning-color:    #d97706;
-  --danger-color:     #dc2626;
-  --text-main:        #0f172a;
-  --text-secondary:   #334155;
-  --text-muted:       #64748b;
-  --input-bg:         #f8fafc;
-  --input-border:     #cbd5e1;
-  --input-disabled:   #e2e8f0;
-  --radius-lg:        16px;
-  --radius-md:        10px;
-  --shadow-card:      0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.06);
-  --shadow-hover:     0 10px 25px -5px rgba(99, 102, 241, 0.2);
+  --success-color: #059669;
+  --warning-color: #d97706;
+  --danger-color: #dc2626;
+  --text-main: #0f172a;
+  --text-secondary: #334155;
+  --text-muted: #64748b;
+  --input-bg: #f8fafc;
+  --input-border: #cbd5e1;
+  --input-disabled: #e2e8f0;
+  --radius-lg: 16px;
+  --radius-md: 10px;
+  --shadow-card: 0 4px 6px -1px rgba(0, 0, 0, 0.08), 0 2px 4px -2px rgba(0, 0, 0, 0.04);
+  --shadow-hover: 0 10px 25px -5px rgba(99, 102, 241, 0.15);
 }
 
-/* ─── Base ─────────────────────────────────────── */
+/* ─── Base Typography & Body ───────────────────────────────── */
 body {
   font-family: 'Plus Jakarta Sans', sans-serif;
   background-color: var(--bg-base);
@@ -35,16 +35,25 @@ body {
   flex-direction: column;
 }
 
-h1, h2, h3, h4, h5, h6, .brand-font {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+.brand-font {
   font-family: 'Outfit', sans-serif;
-  color: var(--text-main);
+  color: var(--text-main) !important;
 }
 
-p, span, small, label {
+p,
+span,
+small,
+label {
   color: var(--text-secondary);
 }
 
-/* ─── Cards ─────────────────────────────────────── */
+/* ─── Cards ────────────────────────────────────────────────── */
 .glass-card {
   background: var(--card-bg);
   border: 1px solid var(--card-border);
@@ -57,11 +66,60 @@ p, span, small, label {
   box-shadow: var(--shadow-hover);
 }
 
-/* ─── Navbar ─────────────────────────────────────── */
+/* Force light theme typography inside cards (overrides legacy dark mode text utilities) */
+.glass-card .text-white,
+.glass-card .text-light,
+.glass-card h1,
+.glass-card h2,
+.glass-card h3,
+.glass-card h4,
+.glass-card h5,
+.glass-card h6 {
+  color: var(--text-main) !important;
+}
+
+.glass-card .text-muted,
+.glass-card small {
+  color: var(--text-muted) !important;
+}
+
+/* ─── Dashboard Specific High-Contrast Overrides ───────────── */
+#dispUsername,
+#dispFullName,
+#dispAge,
+#dispBio,
+.profile-value {
+  color: var(--text-main) !important;
+  font-weight: 600;
+}
+
+.profile-label,
+.card-title,
+.text-uppercase {
+  color: var(--text-muted) !important;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+/* Top Banner Username Pill Fix */
+.username-badge,
+#dispUsernameContainer,
+.badge-secondary,
+.bg-secondary {
+  background-color: #e2e8f0 !important;
+  color: var(--text-secondary) !important;
+  font-weight: 600;
+  border: 1px solid #cbd5e1;
+  padding: 4px 10px;
+  border-radius: 12px;
+}
+
+/* ─── Navbar ───────────────────────────────────────────────── */
 .navbar-custom {
   background: #ffffff !important;
   border-bottom: 1px solid var(--card-border);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.07);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
 .navbar-brand {
@@ -73,7 +131,7 @@ p, span, small, label {
   -webkit-text-fill-color: transparent;
 }
 
-/* ─── Architecture Badges ─────────────────────────── */
+/* ─── Architecture Badges ───────────────────────────────────── */
 .badge-tech {
   padding: 6px 14px;
   border-radius: 20px;
@@ -92,29 +150,29 @@ p, span, small, label {
 
 .badge-mysql {
   background: rgba(8, 145, 178, 0.1);
-  color: #0369a1;
+  color: #0369a1 !important;
   border: 1px solid rgba(8, 145, 178, 0.3);
 }
 
 .badge-mongo {
   background: rgba(5, 150, 105, 0.1);
-  color: #047857;
+  color: #047857 !important;
   border: 1px solid rgba(5, 150, 105, 0.3);
 }
 
 .badge-redis {
   background: rgba(220, 38, 38, 0.08);
-  color: #b91c1c;
+  color: #b91c1c !important;
   border: 1px solid rgba(220, 38, 38, 0.25);
 }
 
 .badge-php {
   background: rgba(99, 102, 241, 0.1);
-  color: #4338ca;
+  color: #4338ca !important;
   border: 1px solid rgba(99, 102, 241, 0.3);
 }
 
-/* ─── Form Labels ─────────────────────────────────── */
+/* ─── Form Labels & Controls ────────────────────────────────── */
 .form-label {
   color: var(--text-secondary);
   font-weight: 600;
@@ -122,7 +180,6 @@ p, span, small, label {
   margin-bottom: 6px;
 }
 
-/* ─── Form Controls ────────────────────────────────── */
 .form-control,
 .form-select {
   background-color: var(--input-bg);
@@ -147,7 +204,7 @@ p, span, small, label {
   color: #94a3b8;
 }
 
-/* Disabled / read-only inputs — light gray bg with visible dark text */
+/* Disabled / read-only inputs — light slate bg with visible dark text */
 .form-control:disabled,
 .form-control[readonly],
 input[readonly],
@@ -159,7 +216,7 @@ input:disabled {
   opacity: 1;
 }
 
-/* ─── Input Groups & Prepend Icons ─────────────────── */
+/* ─── Input Groups & Prepend Icons ──────────────────────────── */
 .input-group {
   display: flex;
   align-items: stretch;
@@ -180,10 +237,9 @@ input:disabled {
   display: flex;
   align-items: center;
   justify-content: center;
-  position: static;
 }
 
-.input-group > .form-control {
+.input-group>.form-control {
   border-top-left-radius: 0 !important;
   border-bottom-left-radius: 0 !important;
 }
@@ -194,10 +250,10 @@ input:disabled {
   background-color: #ede9fe;
 }
 
-/* ─── Buttons ──────────────────────────────────────── */
+/* ─── Buttons ───────────────────────────────────────────────── */
 .btn-gradient-primary {
   background: var(--primary-gradient);
-  color: #ffffff;
+  color: #ffffff !important;
   border: none;
   border-radius: var(--radius-md);
   font-weight: 600;
@@ -207,7 +263,7 @@ input:disabled {
 }
 
 .btn-gradient-primary:hover {
-  color: #ffffff;
+  color: #ffffff !important;
   transform: translateY(-2px);
   box-shadow: 0 8px 22px rgba(168, 85, 247, 0.45);
 }
@@ -219,7 +275,7 @@ input:disabled {
 .btn-outline-glass {
   background: transparent;
   border: 1px solid var(--card-border);
-  color: var(--text-secondary);
+  color: var(--text-secondary) !important;
   border-radius: var(--radius-md);
   font-weight: 600;
   padding: 12px 24px;
@@ -228,11 +284,11 @@ input:disabled {
 
 .btn-outline-glass:hover {
   background: var(--input-disabled);
-  color: var(--text-main);
+  color: var(--text-main) !important;
   border-color: #94a3b8;
 }
 
-/* ─── Custom Alerts ─────────────────────────────────── */
+/* ─── Custom Alerts ─────────────────────────────────────────── */
 .custom-alert {
   border-radius: var(--radius-md);
   border: 1px solid transparent;
@@ -246,53 +302,47 @@ input:disabled {
 .custom-alert-danger {
   background: #fef2f2;
   border-color: #fecaca;
-  color: #991b1b;
+  color: #991b1b !important;
 }
 
 .custom-alert-success {
   background: #f0fdf4;
   border-color: #bbf7d0;
-  color: #166534;
+  color: #166534 !important;
 }
 
-/* ─── Interest Tag Pills ────────────────────────────── */
+/* ─── Interest Tag Pills ────────────────────────────────────── */
 .interest-tag {
   display: inline-block;
   background: #ede9fe;
-  color: #4338ca;
+  color: #4338ca !important;
   border: 1px solid #c4b5fd;
   padding: 4px 12px;
   border-radius: 16px;
   font-size: 0.82rem;
-  font-weight: 500;
+  font-weight: 600;
   margin: 3px;
 }
 
-/* ─── Loading Spinner ───────────────────────────────── */
+/* ─── Loading Spinner ───────────────────────────────────────── */
 .spinner-inline {
   width: 1.2rem;
   height: 1.2rem;
   border-width: 0.15em;
 }
 
-/* ─── Hero Title Gradient ───────────────────────────── */
+/* ─── Hero Title Gradient ───────────────────────────────────── */
 .hero-glow {
   background: linear-gradient(135deg, #1e1b4b 0%, #4338ca 50%, #6366f1 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
-/* ─── Section Dividers ──────────────────────────────── */
+/* ─── Section Dividers & Footers ────────────────────────────── */
 .border-bottom {
   border-bottom-color: var(--card-border) !important;
 }
 
-/* ─── Text Utilities ─────────────────────────────────── */
-.text-secondary, .text-muted {
-  color: var(--text-muted) !important;
-}
-
-/* ─── Footer ─────────────────────────────────────────── */
 footer {
   margin-top: auto;
   border-top: 1px solid var(--card-border);
