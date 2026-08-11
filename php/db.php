@@ -52,7 +52,7 @@ function getMySQLConnection() {
 }
 
 /**
- * Get MongoDB Connection Manager (Supports Atlas SRV format and Auth)
+ * Get MongoDB Connection Manager (Supports Atlas SRV format, TLS, and Auth)
  */
 function getMongoDBManager() {
     static $manager = null;
@@ -65,14 +65,16 @@ function getMongoDBManager() {
     $pass = getenv('MONGO_PASSWORD') ?: '';
     $db   = getenv('MONGO_DB') ?: 'auth_profile_db';
 
-    // Sanitize host string: remove any protocol prefixes and trailing query params
+    // Sanitize host string: strip protocol prefixes and trailing path/query parameters
     $cleanHost = preg_replace('/^(https?:\/\/|mongodb\+srv:\/\/|mongodb:\/\/)/i', '', trim($host));
     $cleanHost = explode('/', $cleanHost)[0];
+    $cleanHost = explode('?', $cleanHost)[0];
 
     // Format Atlas SRV connection string when using cloud hosts (*.mongodb.net)
     if (strpos($cleanHost, 'mongodb.net') !== false) {
         $auth = (!empty($user) && !empty($pass)) ? rawurlencode($user) . ':' . rawurlencode($pass) . '@' : '';
-        $uri  = "mongodb+srv://{$auth}{$cleanHost}/{$db}?retryWrites=true&w=majority";
+        // Add tls=true and tlsInsecure=true to bypass OpenSSL container cert validation mismatches
+        $uri  = "mongodb+srv://{$auth}{$cleanHost}/{$db}?retryWrites=true&w=majority&tls=true&tlsInsecure=true";
     } else {
         $port = getenv('MONGO_PORT') ?: '27017';
         $auth = (!empty($user) && !empty($pass)) ? rawurlencode($user) . ':' . rawurlencode($pass) . '@' : '';
@@ -80,7 +82,11 @@ function getMongoDBManager() {
     }
 
     try {
-        $manager = new MongoDB\Driver\Manager($uri);
+        $driverOptions = [
+            'allow_invalid_hostname' => true,
+            'weak_cert_validation'   => true
+        ];
+        $manager = new MongoDB\Driver\Manager($uri, [], $driverOptions);
         return $manager;
     } catch (\Throwable $e) {
         jsonResponse(false, 'MongoDB Connection Error: ' . $e->getMessage(), 500);
