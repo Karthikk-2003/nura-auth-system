@@ -45,7 +45,7 @@ function getMySQLConnection() {
     try {
         $pdo = new PDO($dsn, $user, $pass, $options);
         return $pdo;
-    } catch (\PDOException $e) {
+    } catch (\Throwable $e) {
         jsonResponse(false, 'MySQL Connection Error: ' . $e->getMessage(), 500);
         exit;
     }
@@ -65,22 +65,24 @@ function getMongoDBManager() {
     $pass = getenv('MONGO_PASSWORD') ?: '';
     $db   = getenv('MONGO_DB') ?: 'auth_profile_db';
 
+    // Sanitize host string: remove any protocol prefixes and trailing query params
+    $cleanHost = preg_replace('/^(https?:\/\/|mongodb\+srv:\/\/|mongodb:\/\/)/i', '', trim($host));
+    $cleanHost = explode('/', $cleanHost)[0];
+
     // Format Atlas SRV connection string when using cloud hosts (*.mongodb.net)
-    if (strpos($host, 'mongodb.net') !== false) {
+    if (strpos($cleanHost, 'mongodb.net') !== false) {
         $auth = (!empty($user) && !empty($pass)) ? rawurlencode($user) . ':' . rawurlencode($pass) . '@' : '';
-        $cleanHost = preg_replace('/^https?:\/\//', '', $host);
-        $cleanHost = explode('/', $cleanHost)[0]; // Extract pure domain
-        $uri = "mongodb+srv://{$auth}{$cleanHost}/{$db}?retryWrites=true&w=majority";
+        $uri  = "mongodb+srv://{$auth}{$cleanHost}/{$db}?retryWrites=true&w=majority";
     } else {
         $port = getenv('MONGO_PORT') ?: '27017';
         $auth = (!empty($user) && !empty($pass)) ? rawurlencode($user) . ':' . rawurlencode($pass) . '@' : '';
-        $uri  = "mongodb://{$auth}{$host}:{$port}/{$db}";
+        $uri  = "mongodb://{$auth}{$cleanHost}:{$port}/{$db}";
     }
 
     try {
         $manager = new MongoDB\Driver\Manager($uri);
         return $manager;
-    } catch (\Exception $e) {
+    } catch (\Throwable $e) {
         jsonResponse(false, 'MongoDB Connection Error: ' . $e->getMessage(), 500);
         exit;
     }
@@ -121,9 +123,10 @@ function saveMongoProfile($userId, $profileData) {
 
         $result = $manager->executeBulkWrite("{$db}.profiles", $bulk);
         return true;
-    } catch (\Exception $e) {
+    } catch (\Throwable $e) {
         error_log('Mongo Save Error: ' . $e->getMessage());
-        return false;
+        jsonResponse(false, 'MongoDB Save Error: ' . $e->getMessage(), 500);
+        exit;
     }
 }
 
@@ -152,9 +155,10 @@ function getMongoProfile($userId) {
             'interests' => [],
             'updated_at' => null
         ];
-    } catch (\Exception $e) {
+    } catch (\Throwable $e) {
         error_log('Mongo Fetch Error: ' . $e->getMessage());
-        return null;
+        jsonResponse(false, 'MongoDB Fetch Error: ' . $e->getMessage(), 500);
+        exit;
     }
 }
 
@@ -194,7 +198,7 @@ function getRedisConnection() {
             $client = $redis;
             return $client;
         }
-    } catch (\Exception $e) {
+    } catch (\Throwable $e) {
         jsonResponse(false, 'Redis Connection Error: ' . $e->getMessage(), 500);
         exit;
     }
@@ -208,7 +212,7 @@ function saveSession($token, $sessionData, $ttl = 86400) {
         $redis = getRedisConnection();
         $key = "session:" . $token;
         return $redis->setex($key, $ttl, json_encode($sessionData));
-    } catch (\Exception $e) {
+    } catch (\Throwable $e) {
         error_log('Redis Save Error: ' . $e->getMessage());
         return false;
     }
@@ -225,7 +229,7 @@ function getSession($token) {
         $key = "session:" . $token;
         $val = $redis->get($key);
         return $val ? json_decode($val, true) : null;
-    } catch (\Exception $e) {
+    } catch (\Throwable $e) {
         error_log('Redis Fetch Error: ' . $e->getMessage());
         return null;
     }
@@ -241,7 +245,7 @@ function deleteSession($token) {
         $redis = getRedisConnection();
         $key = "session:" . $token;
         return $redis->del($key) > 0;
-    } catch (\Exception $e) {
+    } catch (\Throwable $e) {
         error_log('Redis Delete Error: ' . $e->getMessage());
         return false;
     }
