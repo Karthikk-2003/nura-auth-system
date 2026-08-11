@@ -52,7 +52,7 @@ function getMySQLConnection() {
 }
 
 /**
- * Get MongoDB Connection Manager (Supports Atlas SRV format, TLS, and Auth)
+ * Get MongoDB Connection Manager (Supports Atlas SRV format and Auth)
  */
 function getMongoDBManager() {
     static $manager = null;
@@ -65,16 +65,15 @@ function getMongoDBManager() {
     $pass = getenv('MONGO_PASSWORD') ?: '';
     $db   = getenv('MONGO_DB') ?: 'auth_profile_db';
 
-    // Sanitize host string: strip protocol prefixes and trailing path/query parameters
+    // Sanitize host string: strip protocol prefixes and trailing parameters
     $cleanHost = preg_replace('/^(https?:\/\/|mongodb\+srv:\/\/|mongodb:\/\/)/i', '', trim($host));
     $cleanHost = explode('/', $cleanHost)[0];
     $cleanHost = explode('?', $cleanHost)[0];
 
-    // Format Atlas SRV connection string when using cloud hosts (*.mongodb.net)
+    // Format Atlas SRV connection string
     if (strpos($cleanHost, 'mongodb.net') !== false) {
         $auth = (!empty($user) && !empty($pass)) ? rawurlencode($user) . ':' . rawurlencode($pass) . '@' : '';
-        // Add tls=true and tlsInsecure=true to bypass OpenSSL container cert validation mismatches
-        $uri  = "mongodb+srv://{$auth}{$cleanHost}/{$db}?retryWrites=true&w=majority&tls=true&tlsInsecure=true";
+        $uri  = "mongodb+srv://{$auth}{$cleanHost}/{$db}?retryWrites=true&w=majority";
     } else {
         $port = getenv('MONGO_PORT') ?: '27017';
         $auth = (!empty($user) && !empty($pass)) ? rawurlencode($user) . ':' . rawurlencode($pass) . '@' : '';
@@ -82,18 +81,14 @@ function getMongoDBManager() {
     }
 
     try {
-        $driverOptions = [
-            'allow_invalid_hostname' => true,
-            'weak_cert_validation'   => true
-        ];
-        $manager = new MongoDB\Driver\Manager($uri, [], $driverOptions);
+        // Standard Manager instantiation maintaining native SNI TLS handshake
+        $manager = new MongoDB\Driver\Manager($uri);
         return $manager;
     } catch (\Throwable $e) {
         jsonResponse(false, 'MongoDB Connection Error: ' . $e->getMessage(), 500);
         exit;
     }
 }
-
 /**
  * Save or Update Extended Profile in MongoDB
  */
